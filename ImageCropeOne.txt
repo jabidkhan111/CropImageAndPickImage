@@ -1,0 +1,11 @@
+dependency- 
+			 api 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
+			 
+manifest-
+			    <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat"/>
+			
+settings.gradles()
+					  jcenter()
+			

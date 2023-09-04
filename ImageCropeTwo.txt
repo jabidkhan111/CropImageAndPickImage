@@ -1,0 +1,55 @@
+public class MainActivity extends AppCompatActivity {
+    ActivityMainBinding binding;
+    private ActivityResultLauncher<Intent> galleryLauncher;
+    Uri resultUri;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        binding.save.setOnClickListener(v -> {
+            if (resultUri==null) {
+                Toast.makeText(this, "Empty", Toast.LENGTH_SHORT).show();
+            }else {
+                Toast.makeText(this, "Not Empty", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        galleryLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri selectedImageUri = result.getData().getData();
+                        // Start the cropping activity only when you have a valid image URI.
+                        if (selectedImageUri != null) {
+                            CropImage.activity(selectedImageUri)
+                                    .setGuidelines(CropImageView.Guidelines.ON)
+                                    .start(MainActivity.this);
+                        }
+                    }
+                });
+
+        binding.imageView.setOnClickListener(v -> {
+            Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            galleryLauncher.launch(galleryIntent);
+        });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                resultUri = result.getUri();
+                // Set the cropped image to your ImageView
+                binding.imageView.setImageURI(resultUri);
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+                // Handle cropping error if needed
+            }
+        }
+    }
+
+}
